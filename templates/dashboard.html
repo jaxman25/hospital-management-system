@@ -1,0 +1,451 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+            color: white;
+            padding: 30px 0;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
+        
+        .logo-icon {
+            font-size: 2.8rem;
+        }
+        
+        .system-status {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            color: #0066cc;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #0066cc;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .action-card:hover {
+            border-color: #0066cc;
+            transform: translateY(-3px);
+        }
+        
+        .action-icon {
+            font-size: 2.5rem;
+            color: #0066cc;
+            margin-bottom: 15px;
+        }
+        
+        .action-title {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .action-description {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #0066cc;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn:hover {
+            background: #0052a3;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .api-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .api-endpoints {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .endpoint {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #0066cc;
+        }
+        
+        .endpoint-method {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #0066cc;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .endpoint-method.get { background: #28a745; }
+        .endpoint-method.post { background: #0066cc; }
+        .endpoint-method.put { background: #ffc107; color: #333; }
+        .endpoint-method.delete { background: #dc3545; }
+        
+        .endpoint-path {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+        
+        .endpoint-description {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: #666;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
+        }
+        
+        .last-updated {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .logo h1 {
+                font-size: 2rem;
+            }
+            
+            .stat-number {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon"></div>
+                    <h1>Hospital Management System</h1>
+                </div>
+                <div class="system-status">
+                    <span class="status-indicator"></span>
+                    <span>System Status: <strong>OPERATIONAL</strong></span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon"></div>
+                    <div class="stat-number" id="doctorCount">0</div>
+                </div>
+                <div class="stat-label">Total Doctors</div>
+                <p>Medical professionals in the system</p>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon"></div>
+                    <div class="stat-number" id="patientCount">0</div>
+                </div>
+                <div class="stat-label">Total Patients</div>
+                <p>Patients registered in the system</p>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon"></div>
+                    <div class="stat-number" id="systemUptime">100%</div>
+                </div>
+                <div class="stat-label">System Uptime</div>
+                <p>Reliability and availability</p>
+            </div>
+        </div>
+        
+        <div class="actions-grid">
+            <div class="action-card">
+                <div class="action-icon"></div>
+                <h3 class="action-title">Manage Doctors</h3>
+                <p class="action-description">Add, view, and manage medical staff</p>
+                <a href="/doctors/" class="btn">View Doctors</a>
+            </div>
+            
+            <div class="action-card">
+                <div class="action-icon"></div>
+                <h3 class="action-title">Manage Patients</h3>
+                <p class="action-description">Register and manage patient records</p>
+                <a href="/patients/" class="btn">View Patients</a>
+            </div>
+            
+            <div class="action-card">
+                <div class="action-icon"></div>
+                <h3 class="action-title">API Documentation</h3>
+                <p class="action-description">Interactive API documentation</p>
+                <a href="/docs" target="_blank" class="btn">Open API Docs</a>
+            </div>
+            
+            <div class="action-card">
+                <div class="action-icon"></div>
+                <h3 class="action-title">System Health</h3>
+                <p class="action-description">Check system status and performance</p>
+                <a href="/api/health" class="btn btn-secondary">Health Check</a>
+            </div>
+        </div>
+        
+        <div class="api-section">
+            <h2 class="section-title">API Endpoints</h2>
+            <div class="api-endpoints">
+                <div class="endpoint">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/health</div>
+                    <p class="endpoint-description">Check system health and status</p>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/info</div>
+                    <p class="endpoint-description">Get system information</p>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method get">GET</span>
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/doctors/</div>
+                    <p class="endpoint-description">Manage doctors (list and create)</p>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method get">GET</span>
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/patients/</div>
+                    <p class="endpoint-description">Manage patients (list and create)</p>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/doctors/{id}</div>
+                    <p class="endpoint-description">Get specific doctor details</p>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/patients/{id}</div>
+                    <p class="endpoint-description">Get specific patient details</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Hospital Management System v1.0.0</p>
+            <p> 2026 Hospital Management. All rights reserved.</p>
+            <div class="last-updated">Last updated: <span id="currentDate"></span></div>
+        </footer>
+    </div>
+    
+    <script>
+        // Update current date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        // Fetch and update statistics
+        async function updateStatistics() {
+            try {
+                // Fetch doctor count
+                const doctorsResponse = await fetch('/doctors/');
+                const doctors = await doctorsResponse.json();
+                document.getElementById('doctorCount').textContent = doctors.length;
+                
+                // Fetch patient count
+                const patientsResponse = await fetch('/patients/');
+                const patients = await patientsResponse.json();
+                document.getElementById('patientCount').textContent = patients.length;
+                
+                // Fetch health status
+                const healthResponse = await fetch('/api/health');
+                const health = await healthResponse.json();
+                
+                // Update system status if needed
+                const statusIndicator = document.querySelector('.status-indicator');
+                if (health.status === 'healthy') {
+                    statusIndicator.style.backgroundColor = '#4CAF50';
+                } else {
+                    statusIndicator.style.backgroundColor = '#f44336';
+                }
+                
+            } catch (error) {
+                console.error('Error fetching statistics:', error);
+            }
+        }
+        
+        // Update statistics on page load
+        updateStatistics();
+        
+        // Update every 30 seconds
+        setInterval(updateStatistics, 30000);
+    </script>
+</body>
+</html>

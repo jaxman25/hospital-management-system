@@ -1,0 +1,1317 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 Pharmacy Management Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .api-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: #495057;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background: #e9ecef;
+        }
+        
+        .tab.active {
+            color: #2c3e50;
+            border-bottom-color: #4ca1af;
+            background: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #4ca1af;
+        }
+        
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .stat-card .trend {
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+        
+        .stat-card .trend.positive {
+            color: #28a745;
+        }
+        
+        .stat-card .trend.negative {
+            color: #dc3545;
+        }
+        
+        .content-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card h2 .badge {
+            background: #4ca1af;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+        
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 10px;
+            border: 1px solid #f0f0f0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        tr:hover {
+            background: #f8f9ff;
+        }
+        
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .status.in-stock {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.low-stock {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.out-of-stock {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.expired {
+            background: #d6d8db;
+            color: #1b1e21;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .action-btn {
+            background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .action-btn.secondary {
+            background: #6c757d;
+        }
+        
+        .search-box {
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #4ca1af;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert.warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 5px solid #ffc107;
+        }
+        
+        .alert.danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            color: #2c3e50;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #6c757d;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4ca1af;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.3s;
+        }
+        
+        .btn-primary {
+            background: #4ca1af;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            border-top: 1px solid #f0f0f0;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .content-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                flex: 1;
+                min-width: 120px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💊 Pharmacy Management System</h1>
+            <p>Drug Inventory, Prescription Fulfillment & Supplier Management</p>
+            <div class="api-status" id="apiStatus">Connecting...</div>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</div>
+            <div class="tab" onclick="switchTab('inventory')">📦 Inventory</div>
+            <div class="tab" onclick="switchTab('prescriptions')">📝 Prescriptions</div>
+            <div class="tab" onclick="switchTab('drugs')">💊 Drugs</div>
+            <div class="tab" onclick="switchTab('suppliers')">🏭 Suppliers</div>
+            <div class="tab" onclick="switchTab('purchase-orders')">📋 Purchase Orders</div>
+        </div>
+        
+        <!-- Dashboard Tab -->
+        <div class="tab-content active" id="dashboard-tab">
+            <div class="stats-grid" id="dashboardStats">
+                <!-- Stats will be loaded here -->
+            </div>
+            
+            <div class="alerts-container" id="alertsContainer">
+                <!-- Alerts will be loaded here -->
+            </div>
+            
+            <div class="content-row">
+                <div class="card">
+                    <h2>📈 Sales Overview <span class="badge">Last 30 Days</span></h2>
+                    <div class="chart-container">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2>⚡ Quick Actions</h2>
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="showAddDrugModal()">
+                            <span>➕</span> Add New Drug
+                        </button>
+                        <button class="action-btn" onclick="showAddInventoryModal()">
+                            <span>📦</span> Add to Inventory
+                        </button>
+                        <button class="action-btn secondary" onclick="switchTab('prescriptions')">
+                            <span>📝</span> View Prescriptions
+                        </button>
+                        <button class="action-btn secondary" onclick="showReorderModal()">
+                            <span>🔄</span> Reorder Items
+                        </button>
+                    </div>
+                    
+                    <h2 style="margin-top: 30px;">🔍 Quick Search</h2>
+                    <div class="search-box">
+                        <input type="text" id="globalSearch" placeholder="Search drugs, prescriptions, suppliers..." 
+                               onkeyup="performGlobalSearch(this.value)">
+                    </div>
+                    <div id="searchResults" style="max-height: 200px; overflow-y: auto;"></div>
+                </div>
+            </div>
+            
+            <div class="content-row">
+                <div class="card">
+                    <h2>📦 Low Stock Items <span class="badge" id="lowStockCount">0</span></h2>
+                    <div class="table-container">
+                        <table id="lowStockTable">
+                            <thead>
+                                <tr>
+                                    <th>Drug</th>
+                                    <th>Current Stock</th>
+                                    <th>Reorder Level</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lowStockTableBody">
+                                <!-- Low stock items will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2>⏰ Expiring Soon <span class="badge" id="expiringCount">0</span></h2>
+                    <div class="table-container">
+                        <table id="expiringTable">
+                            <thead>
+                                <tr>
+                                    <th>Drug</th>
+                                    <th>Batch</th>
+                                    <th>Expiry Date</th>
+                                    <th>Quantity</th>
+                                    <th>Days Left</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expiringTableBody">
+                                <!-- Expiring items will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inventory Tab -->
+        <div class="tab-content" id="inventory-tab">
+            <div class="card">
+                <h2>📦 Inventory Management</h2>
+                <div class="search-box">
+                    <input type="text" id="inventorySearch" placeholder="Search inventory by drug name, batch, or location..." 
+                           onkeyup="filterInventory(this.value)">
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Drug Name</th>
+                                <th>Batch</th>
+                                <th>Quantity</th>
+                                <th>Location</th>
+                                <th>Expiry Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <!-- Inventory items will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Prescriptions Tab -->
+        <div class="tab-content" id="prescriptions-tab">
+            <div class="card">
+                <h2>📝 Prescription Management</h2>
+                <div class="quick-actions" style="margin-bottom: 20px;">
+                    <button class="action-btn" onclick="showCreatePrescriptionModal()">
+                        <span>➕</span> Create New Prescription
+                    </button>
+                    <button class="action-btn secondary" onclick="loadPrescriptions('pending')">
+                        <span>⏳</span> Show Pending
+                    </button>
+                    <button class="action-btn secondary" onclick="loadPrescriptions('dispensed')">
+                        <span>✅</span> Show Dispensed
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Prescription #</th>
+                                <th>Patient</th>
+                                <th>Doctor</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prescriptionsTableBody">
+                            <!-- Prescriptions will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Drugs Tab -->
+        <div class="tab-content" id="drugs-tab">
+            <div class="card">
+                <h2>💊 Drug Catalog</h2>
+                <div class="quick-actions" style="margin-bottom: 20px;">
+                    <button class="action-btn" onclick="showAddDrugModal()">
+                        <span>➕</span> Add New Drug
+                    </button>
+                    <select id="drugCategoryFilter" onchange="filterDrugsByCategory(this.value)" style="padding: 10px; border-radius: 5px;">
+                        <option value="">All Categories</option>
+                        <option value="Analgesic">Analgesic</option>
+                        <option value="Antibiotic">Antibiotic</option>
+                        <option value="Antihypertensive">Antihypertensive</option>
+                        <option value="Antidiabetic">Antidiabetic</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Drug Code</th>
+                                <th>Brand Name</th>
+                                <th>Generic Name</th>
+                                <th>Category</th>
+                                <th>Strength</th>
+                                <th>Rx Required</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drugsTableBody">
+                            <!-- Drugs will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Suppliers Tab -->
+        <div class="tab-content" id="suppliers-tab">
+            <div class="card">
+                <h2>🏭 Supplier Management</h2>
+                <button class="action-btn" onclick="showAddSupplierModal()" style="margin-bottom: 20px;">
+                    <span>➕</span> Add New Supplier
+                </button>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Supplier Code</th>
+                                <th>Name</th>
+                                <th>Contact Person</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Delivery Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="suppliersTableBody">
+                            <!-- Suppliers will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Purchase Orders Tab -->
+        <div class="tab-content" id="purchase-orders-tab">
+            <div class="card">
+                <h2>📋 Purchase Orders</h2>
+                <button class="action-btn" onclick="showCreatePOModal()" style="margin-bottom: 20px;">
+                    <span>➕</span> Create Purchase Order
+                </button>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>PO Number</th>
+                                <th>Supplier</th>
+                                <th>Order Date</th>
+                                <th>Items</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="purchaseOrdersTableBody">
+                            <!-- Purchase orders will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🏥 Hospital Pharmacy Management System v1.0 | API: <span id="apiUrl">http://localhost:8000</span></p>
+            <p>Last Updated: <span id="lastUpdated">Loading...</span></p>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div class="modal" id="addDrugModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>➕ Add New Drug</h3>
+                <button class="close-modal" onclick="closeModal('addDrugModal')">×</button>
+            </div>
+            <form id="addDrugForm">
+                <div class="form-group">
+                    <label for="drugBrandName">Brand Name *</label>
+                    <input type="text" id="drugBrandName" required>
+                </div>
+                <div class="form-group">
+                    <label for="drugGenericName">Generic Name *</label>
+                    <input type="text" id="drugGenericName" required>
+                </div>
+                <div class="form-group">
+                    <label for="drugType">Drug Type *</label>
+                    <select id="drugType" required>
+                        <option value="tablet">Tablet</option>
+                        <option value="capsule">Capsule</option>
+                        <option value="syrup">Syrup</option>
+                        <option value="injection">Injection</option>
+                        <option value="ointment">Ointment</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="drugStrength">Strength *</label>
+                    <input type="text" id="drugStrength" placeholder="e.g., 500mg, 10mg/ml" required>
+                </div>
+                <div class="form-group">
+                    <label for="drugCategory">Category *</label>
+                    <input type="text" id="drugCategory" placeholder="e.g., Analgesic, Antibiotic" required>
+                </div>
+                <div class="form-group">
+                    <label for="drugManufacturer">Manufacturer</label>
+                    <input type="text" id="drugManufacturer">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="prescriptionRequired" checked>
+                        Prescription Required
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addDrugModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Drug</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1/pharmacy';
+        let salesChart = null;
+        let currentTab = 'dashboard';
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAPIStatus();
+            loadDashboardData();
+            setInterval(loadDashboardData, 60000); // Refresh every minute
+        });
+        
+        // Check API connection
+        async function checkAPIStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/drugs?limit=1`);
+                document.getElementById('apiStatus').textContent = '✅ Connected';
+                document.getElementById('apiStatus').style.background = 'rgba(40, 167, 69, 0.2)';
+            } catch (error) {
+                document.getElementById('apiStatus').textContent = '❌ Disconnected';
+                document.getElementById('apiStatus').style.background = 'rgba(220, 53, 69, 0.2)';
+            }
+        }
+        
+        // Tab switching
+        function switchTab(tabName) {
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Activate selected tab
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            currentTab = tabName;
+            
+            // Load data for the tab
+            switch(tabName) {
+                case 'dashboard':
+                    loadDashboardData();
+                    break;
+                case 'inventory':
+                    loadInventory();
+                    break;
+                case 'prescriptions':
+                    loadPrescriptions();
+                    break;
+                case 'drugs':
+                    loadDrugs();
+                    break;
+                case 'suppliers':
+                    loadSuppliers();
+                    break;
+                case 'purchase-orders':
+                    loadPurchaseOrders();
+                    break;
+            }
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load stats
+                const [drugsRes, inventoryRes, prescriptionsRes, lowStockRes] = await Promise.all([
+                    fetch(`${API_BASE}/drugs?limit=1`),
+                    fetch(`${API_BASE}/inventory?limit=1`),
+                    fetch(`${API_BASE}/prescriptions?limit=1`),
+                    fetch(`${API_BASE}/inventory/low-stock`)
+                ]);
+                
+                const drugsData = await drugsRes.json();
+                const inventoryData = await inventoryRes.json();
+                const prescriptionsData = await prescriptionsRes.json();
+                const lowStockData = await lowStockRes.json();
+                
+                // Update stats grid
+                document.getElementById('dashboardStats').innerHTML = `
+                    <div class="stat-card">
+                        <h3>Total Drugs</h3>
+                        <div class="value">${drugsData.count}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Inventory Items</h3>
+                        <div class="value">${inventoryData.count}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Prescriptions</h3>
+                        <div class="value">${prescriptionsData.count}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Low Stock Items</h3>
+                        <div class="value">${lowStockData.total_low_stock}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Expired Items</h3>
+                        <div class="value">${lowStockData.total_expired}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Inventory Value</h3>
+                        <div class="value">$--</div>
+                    </div>
+                `;
+                
+                // Update low stock table
+                updateLowStockTable(lowStockData.low_stock);
+                document.getElementById('lowStockCount').textContent = lowStockData.total_low_stock;
+                
+                // Load expiring items
+                const expiringRes = await fetch(`${API_BASE}/inventory/expiring-soon?days=30`);
+                const expiringData = await expiringRes.json();
+                updateExpiringTable(expiringData.items);
+                document.getElementById('expiringCount').textContent = expiringData.count;
+                
+                // Load inventory value
+                const valueRes = await fetch(`${API_BASE}/reports/inventory-value`);
+                const valueData = await valueRes.json();
+                
+                // Update inventory value stat
+                const valueCard = document.querySelector('.stat-card:nth-child(6) .value');
+                if (valueCard) {
+                    valueCard.textContent = `$${valueData.cost_value.toFixed(2)}`;
+                }
+                
+                // Update timestamp
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        // Update low stock table
+        function updateLowStockTable(items) {
+            const tbody = document.getElementById('lowStockTableBody');
+            if (items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No low stock items</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = items.slice(0, 5).map(item => `
+                <tr>
+                    <td>${item.drug_info?.brand_name || 'Unknown'}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.reorder_level}</td>
+                    <td><span class="status low-stock">Low Stock</span></td>
+                    <td>
+                        <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8em;" 
+                                onclick="showReorderItemModal('${item.drug_id}', '${item.drug_info?.brand_name || 'Unknown'}')">
+                            Reorder
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Update expiring table
+        function updateExpiringTable(items) {
+            const tbody = document.getElementById('expiringTableBody');
+            if (items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No expiring items</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = items.slice(0, 5).map(item => {
+                const expiryDate = new Date(item.expiry_date);
+                const today = new Date();
+                const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                
+                return `
+                    <tr>
+                        <td>${item.drug_info?.brand_name || 'Unknown'}</td>
+                        <td>${item.batch_number}</td>
+                        <td>${new Date(item.expiry_date).toLocaleDateString()}</td>
+                        <td>${item.quantity}</td>
+                        <td>${daysLeft} days</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Load inventory
+        async function loadInventory() {
+            try {
+                const response = await fetch(`${API_BASE}/inventory?limit=50`);
+                const data = await response.json();
+                updateInventoryTable(data.inventory);
+            } catch (error) {
+                console.error('Error loading inventory:', error);
+            }
+        }
+        
+        function updateInventoryTable(items) {
+            const tbody = document.getElementById('inventoryTableBody');
+            if (items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No inventory items</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = items.map(item => {
+                let statusClass = 'in-stock';
+                let statusText = 'In Stock';
+                
+                if (item.quantity <= 0) {
+                    statusClass = 'out-of-stock';
+                    statusText = 'Out of Stock';
+                } else if (item.quantity <= item.reorder_level) {
+                    statusClass = 'low-stock';
+                    statusText = 'Low Stock';
+                }
+                
+                const expiryDate = new Date(item.expiry_date);
+                if (expiryDate < new Date()) {
+                    statusClass = 'expired';
+                    statusText = 'Expired';
+                }
+                
+                return `
+                    <tr>
+                        <td>${item.drug_info?.brand_name || 'Unknown'}</td>
+                        <td>${item.batch_number}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.location || 'N/A'}</td>
+                        <td>${new Date(item.expiry_date).toLocaleDateString()}</td>
+                        <td><span class="status ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8em;" 
+                                    onclick="showAdjustInventoryModal('${item.id}')">
+                                Adjust
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Filter inventory
+        function filterInventory(searchTerm) {
+            const rows = document.querySelectorAll('#inventoryTableBody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm.toLowerCase()) ? '' : 'none';
+            });
+        }
+        
+        // Load prescriptions
+        async function loadPrescriptions(status = null) {
+            try {
+                const url = status ? `${API_BASE}/prescriptions?status=${status}&limit=50` : `${API_BASE}/prescriptions?limit=50`;
+                const response = await fetch(url);
+                const data = await response.json();
+                updatePrescriptionsTable(data.prescriptions);
+            } catch (error) {
+                console.error('Error loading prescriptions:', error);
+            }
+        }
+        
+        function updatePrescriptionsTable(prescriptions) {
+            const tbody = document.getElementById('prescriptionsTableBody');
+            if (prescriptions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No prescriptions</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = prescriptions.map(prescription => {
+                let statusClass = 'pending';
+                let statusText = 'Pending';
+                
+                if (prescription.status === 'dispensed') {
+                    statusClass = 'in-stock';
+                    statusText = 'Dispensed';
+                } else if (prescription.status === 'cancelled') {
+                    statusClass = 'out-of-stock';
+                    statusText = 'Cancelled';
+                }
+                
+                return `
+                    <tr>
+                        <td>${prescription.prescription_number}</td>
+                        <td>${prescription.patient_name || 'Unknown'}</td>
+                        <td>${prescription.doctor_name || 'Unknown'}</td>
+                        <td>${new Date(prescription.date_prescribed).toLocaleDateString()}</td>
+                        <td>${prescription.items.length} items</td>
+                        <td><span class="status ${statusClass}">${statusText}</span></td>
+                        <td>
+                            ${prescription.status === 'active' ? `
+                                <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8em;" 
+                                        onclick="dispensePrescription('${prescription.id}')">
+                                    Dispense
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8em;" 
+                                    onclick="viewPrescriptionDetails('${prescription.id}')">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Load drugs
+        async function loadDrugs() {
+            try {
+                const response = await fetch(`${API_BASE}/drugs?limit=50`);
+                const data = await response.json();
+                updateDrugsTable(data.drugs);
+            } catch (error) {
+                console.error('Error loading drugs:', error);
+            }
+        }
+        
+        function updateDrugsTable(drugs) {
+            const tbody = document.getElementById('drugsTableBody');
+            if (drugs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No drugs</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = drugs.map(drug => `
+                <tr>
+                    <td>${drug.drug_code}</td>
+                    <td>${drug.brand_name}</td>
+                    <td>${drug.generic_name}</td>
+                    <td>${drug.category}</td>
+                    <td>${drug.strength}</td>
+                    <td>${drug.prescription_required ? 'Yes' : 'No'}</td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8em;" 
+                                onclick="viewDrugDetails('${drug.id}')">
+                            Details
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Filter drugs by category
+        async function filterDrugsByCategory(category) {
+            try {
+                const url = category ? `${API_BASE}/drugs?category=${category}&limit=50` : `${API_BASE}/drugs?limit=50`;
+                const response = await fetch(url);
+                const data = await response.json();
+                updateDrugsTable(data.drugs);
+            } catch (error) {
+                console.error('Error filtering drugs:', error);
+            }
+        }
+        
+        // Load suppliers
+        async function loadSuppliers() {
+            try {
+                const response = await fetch(`${API_BASE}/suppliers?limit=50`);
+                const data = await response.json();
+                updateSuppliersTable(data.suppliers);
+            } catch (error) {
+                console.error('Error loading suppliers:', error);
+            }
+        }
+        
+        function updateSuppliersTable(suppliers) {
+            const tbody = document.getElementById('suppliersTableBody');
+            if (suppliers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No suppliers</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = suppliers.map(supplier => `
+                <tr>
+                    <td>${supplier.supplier_code}</td>
+                    <td>${supplier.name}</td>
+                    <td>${supplier.contact_person}</td>
+                    <td>${supplier.email}</td>
+                    <td>${supplier.phone}</td>
+                    <td>${supplier.delivery_time || 'N/A'} days</td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8em;" 
+                                onclick="viewSupplierDetails('${supplier.id}')">
+                            Details
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Load purchase orders
+        async function loadPurchaseOrders() {
+            try {
+                const response = await fetch(`${API_BASE}/purchase-orders?limit=50`);
+                const data = await response.json();
+                updatePurchaseOrdersTable(data.purchase_orders);
+            } catch (error) {
+                console.error('Error loading purchase orders:', error);
+            }
+        }
+        
+        function updatePurchaseOrdersTable(purchaseOrders) {
+            const tbody = document.getElementById('purchaseOrdersTableBody');
+            if (purchaseOrders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No purchase orders</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = purchaseOrders.map(po => {
+                let statusClass = 'pending';
+                let statusText = 'Pending';
+                
+                if (po.status === 'delivered') {
+                    statusClass = 'in-stock';
+                    statusText = 'Delivered';
+                } else if (po.status === 'cancelled') {
+                    statusClass = 'out-of-stock';
+                    statusText = 'Cancelled';
+                }
+                
+                return `
+                    <tr>
+                        <td>${po.po_number}</td>
+                        <td>${po.supplier_name || 'Unknown'}</td>
+                        <td>${new Date(po.order_date).toLocaleDateString()}</td>
+                        <td>${po.items_count} items</td>
+                        <td>$${po.grand_total.toFixed(2)}</td>
+                        <td><span class="status ${statusClass}">${statusText}</span></td>
+                        <td>
+                            ${po.status === 'pending' ? `
+                                <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8em;" 
+                                        onclick="receivePurchaseOrder('${po.id}')">
+                                    Receive
+                                </button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Modal functions
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function showAddDrugModal() {
+            document.getElementById('addDrugForm').reset();
+            showModal('addDrugModal');
+        }
+        
+        // Handle add drug form
+        document.getElementById('addDrugForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const drugData = {
+                brand_name: document.getElementById('drugBrandName').value,
+                generic_name: document.getElementById('drugGenericName').value,
+                drug_type: document.getElementById('drugType').value,
+                strength: document.getElementById('drugStrength').value,
+                category: document.getElementById('drugCategory').value,
+                manufacturer: document.getElementById('drugManufacturer').value,
+                prescription_required: document.getElementById('prescriptionRequired').checked
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/drugs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(drugData)
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Drug added successfully!');
+                    closeModal('addDrugModal');
+                    loadDrugs();
+                    loadDashboardData();
+                } else {
+                    alert('Error: ' + (result.detail || 'Failed to add drug'));
+                }
+            } catch (error) {
+                alert('Error adding drug: ' + error.message);
+            }
+        });
+        
+        // Global search
+        async function performGlobalSearch(query) {
+            if (query.length < 2) {
+                document.getElementById('searchResults').innerHTML = '';
+                return;
+            }
+            
+            try {
+                const [drugsRes, inventoryRes] = await Promise.all([
+                    fetch(`${API_BASE}/drugs?search=${query}&limit=5`),
+                    fetch(`${API_BASE}/inventory?limit=5`)
+                ]);
+                
+                const drugsData = await drugsRes.json();
+                const inventoryData = await inventoryRes.json();
+                
+                const results = [];
+                
+                // Add drug results
+                drugsData.drugs.forEach(drug => {
+                    results.push(`
+                        <div style="padding: 10px; border-bottom: 1px solid #f0f0f0;">
+                            <strong>💊 ${drug.brand_name}</strong>
+                            <div style="font-size: 0.9em; color: #666;">${drug.generic_name} • ${drug.category}</div>
+                            <button onclick="viewDrugDetails('${drug.id}')" 
+                                    style="margin-top: 5px; padding: 3px 8px; font-size: 0.8em;">
+                                View Details
+                            </button>
+                        </div>
+                    `);
+                });
+                
+                // Add inventory results
+                inventoryData.inventory.forEach(item => {
+                    if (item.drug_info?.brand_name?.toLowerCase().includes(query.toLowerCase())) {
+                        results.push(`
+                            <div style="padding: 10px; border-bottom: 1px solid #f0f0f0;">
+                                <strong>📦 ${item.drug_info.brand_name}</strong>
+                                <div style="font-size: 0.9em; color: #666;">Stock: ${item.quantity} • Batch: ${item.batch_number}</div>
+                                <button onclick="showAdjustInventoryModal('${item.id}')" 
+                                        style="margin-top: 5px; padding: 3px 8px; font-size: 0.8em;">
+                                    Adjust Inventory
+                                </button>
+                            </div>
+                        `);
+                    }
+                });
+                
+                document.getElementById('searchResults').innerHTML = results.length > 0 ? 
+                    results.join('') : '<div style="padding: 20px; text-align: center; color: #666;">No results found</div>';
+                    
+            } catch (error) {
+                console.error('Error performing search:', error);
+            }
+        }
+        
+        // Placeholder functions for future implementation
+        function showAddInventoryModal() { alert('Add Inventory functionality to be implemented'); }
+        function showReorderModal() { alert('Reorder functionality to be implemented'); }
+        function showReorderItemModal(drugId, drugName) { alert(`Reorder ${drugName} functionality to be implemented`); }
+        function showAdjustInventoryModal(inventoryId) { alert('Adjust Inventory functionality to be implemented'); }
+        function showCreatePrescriptionModal() { alert('Create Prescription functionality to be implemented'); }
+        function dispensePrescription(prescriptionId) { alert(`Dispense prescription ${prescriptionId} functionality to be implemented`); }
+        function viewPrescriptionDetails(prescriptionId) { alert(`View prescription ${prescriptionId} details functionality to be implemented`); }
+        function viewDrugDetails(drugId) { alert(`View drug ${drugId} details functionality to be implemented`); }
+        function viewSupplierDetails(supplierId) { alert(`View supplier ${supplierId} details functionality to be implemented`); }
+        function showAddSupplierModal() { alert('Add Supplier functionality to be implemented'); }
+        function showCreatePOModal() { alert('Create Purchase Order functionality to be implemented'); }
+        function receivePurchaseOrder(poId) { alert(`Receive PO ${poId} functionality to be implemented`); }
+    </script>
+</body>
+</html>

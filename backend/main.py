@@ -1,104 +1,122 @@
-﻿from fastapi import FastAPI, Depends, HTTPException, status
+﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
-from typing import List, Optional
-import uvicorn
-from datetime import datetime, timedelta
-from contextlib import asynccontextmanager
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
+import os
 
-# Import after creating
-from database import SessionLocal, engine
-import models
+# Import API routers
+from backend.api import patients, doctors, appointments
 
-# Import routers
-from api.test import router as test_router
-from api.patients import router as patients_router
-from api.doctors import router as doctors_router
+# Create database tables
+from backend.database import Base, engine
+from backend.models import *
+Base.metadata.create_all(bind=engine)
 
-models.Base.metadata.create_all(bind=engine)
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup
-    print("Hospital Management System Starting...")
-    # Create sample data
-    try:
-        db = SessionLocal()
-        # Check if we have any doctors, if not create sample
-        if db.query(models.Doctor).count() == 0:
-            print("Creating sample data...")
-            sample_doctor = models.Doctor(
-                id=str(uuid.uuid4()),
-                license_number="DOC-001",
-                first_name="John",
-                last_name="Smith",
-                specialization="Cardiology",
-                department="Cardiology",
-                consultation_fee=100.0,
-                is_available=True
-            )
-            db.add(sample_doctor)
-            db.commit()
-            print("Sample doctor created!")
-    except Exception as e:
-        print(f"Error creating sample data: {e}")
-    finally:
-        db.close()
-    
-    yield
-    
-    # Shutdown
-    print("Hospital Management System Shutting Down...")
-
+# Create FastAPI app
 app = FastAPI(
-    title="Hospital Management System API",
+    title="Hospital Management System",
     version="1.0.0",
-    description="Comprehensive HMS with Patient, Doctor, Appointment, and Medical Records management",
-    lifespan=lifespan
+    description="A comprehensive hospital management system built with FastAPI",
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
-# CORS configuration
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8080"],
+    allow_origins=["*"],  # In production, specify your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+# Include API routers
+app.include_router(patients.router)
+app.include_router(doctors.router)
+app.include_router(appointments.router)
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-@app.get("/")
-async def root():
-    return {"message": "Welcome to Hospital Management System API"}
-
-@app.get("/health")
+# Health check endpoint
+@app.get("/api/health")
 async def health_check():
     return {
         "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "service": "hospital-management-api"
+        "service": "hospital-management",
+        "database": "connected",
+        "version": "1.0.0"
     }
 
-# Include routers
-app.include_router(test_router, prefix="/api/v1")
-app.include_router(patients_router, prefix="/api/v1")
-app.include_router(doctors_router, prefix="/api/v1")
+# Root endpoint - Dashboard
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Hospital Management Dashboard</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+            .container { max-width: 1200px; margin: 0 auto; }
+            .header { text-align: center; margin-bottom: 40px; }
+            .header h1 { color: #2c3e50; }
+            .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+            .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .card h3 { color: #3498db; margin-top: 0; }
+            .btn { display: inline-block; background: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px; }
+            .btn:hover { background: #2980b9; }
+            .btn-secondary { background: #95a5a6; }
+            .btn-secondary:hover { background: #7f8c8d; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1> Hospital Management System</h1>
+                <p>Welcome to the Hospital Management Dashboard</p>
+            </div>
+            
+            <div class="cards">
+                <div class="card">
+                    <h3> Doctors Management</h3>
+                    <p>Manage doctors, specialties, and schedules</p>
+                    <a href="/docs#/doctors" class="btn" target="_blank">Manage Doctors via API</a>
+                </div>
+                
+                <div class="card">
+                    <h3> Patients Management</h3>
+                    <p>Patient records, medical history, and registration</p>
+                    <a href="/docs#/patients" class="btn" target="_blank">Manage Patients via API</a>
+                </div>
+                
+                <div class="card">
+                    <h3> Appointments</h3>
+                    <p>Schedule and manage patient appointments</p>
+                    <a href="/docs#/appointments" class="btn" target="_blank">Manage Appointments via API</a>
+                </div>
+                
+                <div class="card">
+                    <h3> API Documentation</h3>
+                    <p>Interactive API documentation with Swagger UI</p>
+                    <a href="/docs" class="btn" target="_blank">Open API Docs</a>
+                </div>
+                
+                <div class="card">
+                    <h3> System Health</h3>
+                    <p>Check system status and database connection</p>
+                    <a href="/api/health" class="btn btn-secondary">Health Check</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
+
+# Serve static files if they exist
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

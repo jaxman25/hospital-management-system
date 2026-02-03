@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 Hospital Management System - Main Menu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="hospital-styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .welcome-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .welcome-header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #a3d9ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .quick-link {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .quick-link:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        
+        .quick-link i {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #3498db;
+        }
+        
+        .quick-link h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        
+        .quick-link p {
+            color: #7f8c8d;
+            margin: 0;
+        }
+        
+        .system-status {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 40px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .status-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="welcome-header">
+            <h1><i class="fas fa-hospital"></i> Hospital Management System</h1>
+            <p style="font-size: 1.2em; opacity: 0.9;">Choose your starting point</p>
+        </div>
+        
+        <div class="quick-links">
+            <a href="hospital_navigation.html" class="quick-link">
+                <i class="fas fa-compass"></i>
+                <h3>Interactive Navigation</h3>
+                <p>Complete navigation with live status and statistics</p>
+            </a>
+            
+            <a href="http://localhost:8000/dashboard" target="_blank" class="quick-link">
+                <i class="fas fa-tachometer-alt"></i>
+                <h3>System Dashboard</h3>
+                <p>Main system dashboard and overview</p>
+            </a>
+            
+            <a href="http://localhost:8000/docs" target="_blank" class="quick-link">
+                <i class="fas fa-book"></i>
+                <h3>API Documentation</h3>
+                <p>Interactive API docs and testing</p>
+            </a>
+            
+            <a href="pharmacy-dashboard.html" class="quick-link">
+                <i class="fas fa-pills"></i>
+                <h3>Pharmacy Dashboard</h3>
+                <p>Pharmacy and inventory management</p>
+            </a>
+            
+            <a href="http://localhost:8000/api/doctors" target="_blank" class="quick-link">
+                <i class="fas fa-user-md"></i>
+                <h3>Doctors API</h3>
+                <p>View and manage doctors</p>
+            </a>
+            
+            <a href="http://localhost:8000/api/patients" target="_blank" class="quick-link">
+                <i class="fas fa-user-injured"></i>
+                <h3>Patients API</h3>
+                <p>View and manage patients</p>
+            </a>
+        </div>
+        
+        <div class="system-status">
+            <h3><i class="fas fa-heartbeat"></i> System Quick Status</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div style="font-size: 1.5em; color: #3498db;"></div>
+                    <div>Hospital System</div>
+                    <div style="font-weight: bold; color: #2ecc71;">READY</div>
+                </div>
+                <div class="status-item">
+                    <div style="font-size: 1.5em; color: #3498db;"></div>
+                    <div>API Server</div>
+                    <div style="font-weight: bold; color: #2ecc71;">ONLINE</div>
+                </div>
+                <div class="status-item">
+                    <div style="font-size: 1.5em; color: #3498db;"></div>
+                    <div>Database</div>
+                    <div style="font-weight: bold; color: #2ecc71;">CONNECTED</div>
+                </div>
+                <div class="status-item">
+                    <div style="font-size: 1.5em; color: #3498db;"></div>
+                    <div>Version</div>
+                    <div style="font-weight: bold;">1.0.0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simple status check
+        async function checkStatus() {
+            try {
+                const response = await fetch('http://localhost:8000/api/health');
+                if (response.ok) {
+                    console.log(' System is online');
+                }
+            } catch (error) {
+                console.log(' System might be offline');
+            }
+        }
+        
+        // Check on load
+        document.addEventListener('DOMContentLoaded', checkStatus);
+    </script>
+</body>
+</html>

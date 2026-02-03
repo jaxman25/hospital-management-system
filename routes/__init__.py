@@ -1,4 +1,5 @@
-﻿from .dashboard import router as dashboard_router
+﻿# Routes package
+from .dashboard import router as dashboard_router
 from .doctors import router as doctors_router
 from .patients import router as patients_router
 

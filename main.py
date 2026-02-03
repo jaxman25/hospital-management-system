@@ -1,6 +1,11 @@
 ﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+import sys
+import os
+
+# Add current directory to Python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import database
 from models import Base
@@ -9,7 +14,13 @@ from models import Base
 Base.metadata.create_all(bind=database.engine)
 
 # Create FastAPI app
-app = FastAPI(title="Hospital Management System", version="1.0.0")
+app = FastAPI(
+    title="Hospital Management System", 
+    version="1.0.0",
+    description="A comprehensive hospital management system",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
 
 # Configure CORS
 app.add_middleware(
@@ -27,59 +38,62 @@ try:
 except Exception as e:
     print(f"Note: Could not mount static files: {e}")
 
-# Try to import and include dashboard routes
+# Import and include routes with better error handling
 try:
-    from routes import dashboard
-    app.include_router(dashboard.router, tags=["dashboard"])
+    from routes.dashboard import router as dashboard_router
+    app.include_router(dashboard_router)
     print(" Dashboard routes loaded")
 except Exception as e:
-    print(f"Note: Could not load dashboard routes: {e}")
+    print(f"  Could not load dashboard routes: {e}")
 
-# Try to import and include doctors routes
 try:
-    from routes import doctors
-    app.include_router(doctors.router)
+    from routes.doctors import router as doctors_router
+    app.include_router(doctors_router)
     print(" Doctors routes loaded")
 except Exception as e:
-    print(f"Note: Could not load doctors routes: {e}")
+    print(f"  Could not load doctors routes: {e}")
 
-# Try to import and include patients routes
 try:
-    from routes import patients
-    app.include_router(patients.router)
+    from routes.patients import router as patients_router
+    app.include_router(patients_router)
     print(" Patients routes loaded")
 except Exception as e:
-    print(f"Note: Could not load patients routes: {e}")
+    print(f"  Could not load patients routes: {e}")
 
 @app.get("/")
 async def root():
     return {
         "message": "Hospital Management System API",
+        "version": "1.0.0",
         "endpoints": {
-            "health": "/health",
+            "health": "/api/health",
             "docs": "/docs",
             "redoc": "/redoc",
             "dashboard": "/dashboard",
-            "doctors": "/doctors/",
-            "patients": "/patients/"
+            "doctors_api": "/api/doctors",
+            "patients_api": "/api/patients",
+            "doctors_ui": "/doctors/",
+            "patients_ui": "/patients/"
         }
     }
 
 @app.get("/api/health")
 async def health_check():
     return {
-        "status": "healthy", 
+        "status": "healthy",
         "service": "hospital-management",
-        "database": "connected"
+        "database": "connected",
+        "version": "1.0.0"
     }
 
 @app.get("/api/info")
 async def system_info():
     import sys
     return {
-        "python_version": sys.version,
+        "python_version": sys.version.split()[0],
         "fastapi_version": "0.104.1",
-        "system": "Hospital Management System"
+        "system": "Hospital Management System",
+        "status": "operational"
     }
 
 if __name__ == "__main__":

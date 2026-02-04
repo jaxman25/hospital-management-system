@@ -1,0 +1,145 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Hospital Management System{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Hero Section -->
+    <div class="hero-section" style="
+        background: linear-gradient(rgba(44, 62, 80, 0.9), rgba(44, 62, 80, 0.9)),
+                    url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+        background-size: cover;
+        background-position: center;
+        color: white;
+        padding: 4rem 2rem;
+        border-radius: var(--border-radius);
+        text-align: center;
+        margin-bottom: 3rem;
+    ">
+        <h1 style="font-size: 3rem; margin-bottom: 1rem;">
+            <i class="fas fa-heartbeat"></i> MediCare Hospital System
+        </h1>
+        <p style="font-size: 1.3rem; max-width: 800px; margin: 0 auto 2rem;">
+            A comprehensive, modern hospital management solution for efficient patient care, 
+            doctor scheduling, pharmacy management, and hospital administration.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="/dashboard" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                <i class="fas fa-rocket"></i> Launch Dashboard
+            </a>
+            <a href="/docs" class="btn btn-outline" style="font-size: 1.1rem; padding: 1rem 2rem; color: white; border-color: white;">
+                <i class="fas fa-code"></i> Explore API
+            </a>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="page-header">
+        <h2>System Features</h2>
+        <p>Comprehensive modules for complete hospital management</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="card text-center">
+            <div class="card-icon patients" style="margin: 0 auto 1rem;">
+                <i class="fas fa-user-injured"></i>
+            </div>
+            <h3 class="card-title">Patient Management</h3>
+            <p style="color: var(--gray-color); margin: 1rem 0;">
+                Complete patient records, medical history, appointments, and billing.
+            </p>
+            <a href="/api/patients" class="btn btn-outline">Manage Patients</a>
+        </div>
+
+        <div class="card text-center">
+            <div class="card-icon doctors" style="margin: 0 auto 1rem;">
+                <i class="fas fa-user-md"></i>
+            </div>
+            <h3 class="card-title">Doctor Scheduling</h3>
+            <p style="color: var(--gray-color); margin: 1rem 0;">
+                Doctor profiles, appointment scheduling, and availability management.
+            </p>
+            <a href="/api/doctors" class="btn btn-outline">Manage Doctors</a>
+        </div>
+
+        <div class="card text-center">
+            <div class="card-icon pharmacy" style="margin: 0 auto 1rem;">
+                <i class="fas fa-pills"></i>
+            </div>
+            <h3 class="card-title">Pharmacy System</h3>
+            <p style="color: var(--gray-color); margin: 1rem 0;">
+                Inventory management, prescription tracking, and medication dispensing.
+            </p>
+            <a href="/pharmacy" class="btn btn-outline">Pharmacy Dashboard</a>
+        </div>
+
+        <div class="card text-center">
+            <div class="card-icon appointments" style="margin: 0 auto 1rem;">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <h3 class="card-title">Appointments</h3>
+            <p style="color: var(--gray-color); margin: 1rem 0;">
+                Online booking, scheduling, reminders, and appointment tracking.
+            </p>
+            <a href="#" class="btn btn-outline">Schedule Appointments</a>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="card mt-2" style="background: linear-gradient(to right, var(--primary-color), var(--secondary-color)); color: white;">
+        <div class="dashboard-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="text-center">
+                <div style="font-size: 2.5rem; font-weight: 700;">24/7</div>
+                <div>Service Hours</div>
+            </div>
+            <div class="text-center">
+                <div style="font-size: 2.5rem; font-weight: 700;">50+</div>
+                <div>Medical Staff</div>
+            </div>
+            <div class="text-center">
+                <div style="font-size: 2.5rem; font-weight: 700;">100%</div>
+                <div>Secure Data</div>
+            </div>
+            <div class="text-center">
+                <div style="font-size: 2.5rem; font-weight: 700;">5000+</div>
+                <div>Patients Served</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="text-center mt-2 p-2" style="background: var(--light-color); border-radius: var(--border-radius);">
+        <h3>Ready to transform your hospital management?</h3>
+        <p class="mb-1">Experience the power of modern healthcare management</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
+            <a href="/dashboard" class="btn btn-primary">
+                <i class="fas fa-play-circle"></i> Get Started
+            </a>
+            <a href="/docs" class="btn btn-outline">
+                <i class="fas fa-book"></i> Read Documentation
+            </a>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<style>
+    .hero-section {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: inherit;
+        filter: blur(5px);
+        z-index: -1;
+    }
+</style>
+{% endblock %}
+{% endblock %}

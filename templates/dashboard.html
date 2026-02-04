@@ -1,40 +1,210 @@
 ﻿{% extends "base.html" %}
 
-{% block content %}
-<h2>System Dashboard</h2>
-<p>Welcome to the Hospital Management System dashboard.</p>
+{% block title %}Dashboard - Hospital Management System{% endblock %}
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px;">
-    <div style="background: #e8f4fc; padding: 20px; border-radius: 8px;">
-        <h3>👨‍⚕️ Doctors</h3>
-        <p>Manage doctors and schedules</p>
-        <a href="/api/doctors" style="color: #3498db;">View Doctors </a>
+{% block content %}
+<div class="fade-in">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2><i class="fas fa-tachometer-alt"></i> Hospital Dashboard</h2>
+        <p>Real-time overview of hospital operations and statistics</p>
     </div>
-    
-    <div style="background: #e8f8f0; padding: 20px; border-radius: 8px;">
-        <h3>👥 Patients</h3>
-        <p>Patient records and management</p>
-        <a href="/api/patients" style="color: #2ecc71;">View Patients </a>
+
+    <!-- Statistics Cards -->
+    <div class="dashboard-grid">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon patients">
+                    <i class="fas fa-user-injured"></i>
+                </div>
+                <h3 class="card-title">Total Patients</h3>
+            </div>
+            <div class="card-value" id="patient-count">0</div>
+            <div class="card-change"><i class="fas fa-arrow-up"></i> 12% from last month</div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon doctors">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h3 class="card-title">Active Doctors</h3>
+            </div>
+            <div class="card-value" id="doctor-count">0</div>
+            <div class="card-change"><i class="fas fa-arrow-up"></i> 5% from last month</div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon appointments">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h3 class="card-title">Today's Appointments</h3>
+            </div>
+            <div class="card-value" id="appointment-count">0</div>
+            <div class="card-change"><i class="fas fa-clock"></i> 15 pending</div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon pharmacy">
+                    <i class="fas fa-pills"></i>
+                </div>
+                <h3 class="card-title">Pharmacy Stock</h3>
+            </div>
+            <div class="card-value">85%</div>
+            <div class="card-change"><i class="fas fa-exclamation-triangle"></i> 5 items low</div>
+        </div>
     </div>
-    
-    <div style="background: #fff8e1; padding: 20px; border-radius: 8px;">
-        <h3> API</h3>
-        <p>Interactive API documentation</p>
-        <a href="/docs" style="color: #f39c12;">Open API Docs </a>
-    </div>
-    
-    <div style="background: #f9ebea; padding: 20px; border-radius: 8px;">
-        <h3> Health</h3>
-        <p>System health status</p>
-        <a href="/api/health" style="color: #e74c3c;">Check Health </a>
+
+    <!-- Recent Activity & Quick Actions -->
+    <div class="dashboard-grid mt-2">
+        <!-- Recent Patients -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-history"></i> Recent Patients</h3>
+                <a href="/api/patients" class="btn btn-outline btn-sm">View All</a>
+            </div>
+            <div class="table-container">
+                <table class="table" id="recent-patients">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-bolt"></i> Quick Actions</h3>
+            </div>
+            <div class="p-2">
+                <div class="quick-actions-grid">
+                    <a href="/api/patients?action=add" class="btn btn-primary mb-1" style="width: 100%;">
+                        <i class="fas fa-user-plus"></i> Add New Patient
+                    </a>
+                    <a href="/api/doctors?action=add" class="btn btn-primary mb-1" style="width: 100%;">
+                        <i class="fas fa-user-md"></i> Add New Doctor
+                    </a>
+                    <a href="/pharmacy" class="btn btn-success mb-1" style="width: 100%;">
+                        <i class="fas fa-prescription-bottle-alt"></i> Pharmacy Management
+                    </a>
+                    <a href="/docs" class="btn btn-outline mb-1" style="width: 100%;">
+                        <i class="fas fa-code"></i> API Documentation
+                    </a>
+                </div>
+                
+                <!-- System Status -->
+                <div class="system-status mt-2">
+                    <h4><i class="fas fa-server"></i> System Status</h4>
+                    <div class="status-item">
+                        <span>Database:</span>
+                        <span class="status-indicator active"></span> Online
+                    </div>
+                    <div class="status-item">
+                        <span>API Server:</span>
+                        <span class="status-indicator active"></span> Running
+                    </div>
+                    <div class="status-item">
+                        <span>Last Backup:</span>
+                        <span>Today 02:00 AM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<h3 style="margin-top: 40px;">Quick Actions</h3>
-<ul>
-    <li><a href="/api/doctors">List all doctors</a></li>
-    <li><a href="/api/patients">List all patients</a></li>
-    <li><a href="/docs#/doctors/create_doctor_doctors_post">Add new doctor</a></li>
-    <li><a href="/docs#/patients/create_patient_patients_post">Add new patient</a></li>
-</ul>
+{% block extra_js %}
+<script>
+    // Fetch and update dashboard data
+    async function updateDashboard() {
+        try {
+            // Fetch patients
+            const patientsResponse = await fetch('/api/patients');
+            const patients = await patientsResponse.json();
+            document.getElementById('patient-count').textContent = patients.length;
+            
+            // Fetch doctors
+            const doctorsResponse = await fetch('/api/doctors');
+            const doctors = await doctorsResponse.json();
+            document.getElementById('doctor-count').textContent = doctors.length;
+            
+            // Update recent patients table
+            const recentPatients = patients.slice(0, 5);
+            const tableBody = document.querySelector('#recent-patients tbody');
+            tableBody.innerHTML = recentPatients.map(patient => 
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><span class="status-badge active">Active</span></td>
+                </tr>
+            ).join('');
+            
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        }
+    }
+    
+    // Update dashboard on load and every 30 seconds
+    document.addEventListener('DOMContentLoaded', updateDashboard);
+    setInterval(updateDashboard, 30000);
+</script>
+
+<style>
+    .quick-actions-grid {
+        display: grid;
+        gap: 0.5rem;
+    }
+    
+    .system-status {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+    }
+    
+    .status-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 4px;
+    }
+    
+    .status-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+    
+    .status-indicator.active {
+        background: var(--success-color);
+    }
+    
+    .status-badge {
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .status-badge.active {
+        background: #d4edda;
+        color: #155724;
+    }
+</style>
+{% endblock %}
 {% endblock %}
